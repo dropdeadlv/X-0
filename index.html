@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+	<title>Хрестики-нолики</title>
+
+	<style type="text/css">
+	#field{
+		
+		margin:50px 50px;
+		padding: 10px;
+		color:black;
+		text-align: left;
+		font-size: 13px;
+		background-color: yellow;
+		font-family: Verdana;
+		font-weight: bold;
+		text-align: left;
+	}
+
+	
+	#size,#button{
+		color:black;
+		text-align: center;
+		font-size: 13px;
+		font-family: Verdana;
+		font-weight: bold;
+		padding: 5px;
+	}
+	
+	
+	#table{
+		
+		margin:20px auto;
+	}
+
+	#table td{
+		width: 40px;
+		height: 40px;
+		background-color: orange; 
+		text-align: center;
+		cursor: pointer;
+		font-size:16px;
+		font-weight:bold;
+		font-family: Verdana;
+		color:white;
+
+	}
+	</style>
+
+	<script type="text/javascript">
+	window.onload=function()
+	{
+        
+        var xhr = new XMLHttpRequest();
+
+			xhr.open('GET',"/send/",true); //створює новий обєкт, конфігурує запит
+
+			xhr.send();
+
+			xhr.onreadystatechange = function(){
+				if(xhr.readyState==4){
+					if(xhr.status==200)
+						myp.innerHTML += xhr.responseText;
+				}
+			}
+	
+	// поле для гри
+	var gField=null;
+	//
+	button.onclick=function(){
+	var trs=document.querySelectorAll("#table tr");
+	for(var i=0;i<trs.length;i++){
+		trs[i].remove();
+	}
+	var n=size.value;
+	if(n<3) return;
+	createField(n);
+	}
+	//
+	table.onclick=function(event)
+	{
+	var target=event.target;
+	if(target.tagName!=="TD") return;
+	if(target.innerHTML!=="") return;
+
+	if(isWinner(gField.length)){
+		alert("Ви програли!")
+		return;
+	}
+	else{
+		setCell(event.target.parentNode.rowIndex,event.target.cellIndex,"X");
+		console.log()
+		if(isWinner(gField.length)){
+			alert("Ви виграли!");
+			return;
+
+		}
+		PCSet("O",gField.length);
+	}
+
+	
+	/*if(isWinner()){
+		alert("Ви перемогли!");
+		return;
+	}
+
+	
+	
+	
+	PCSet("O");
+	if(isWinner()){
+		alert("Ви програли!");
+		return;
+	}*/
+
+	}
+	// функція встановлюэ хрестик або нолик у відповідну клітинку
+	function setCell(x,y,t){
+			gField[x][y]=t;
+			table.rows[x].cells[y].innerHTML=t;
+	}
+	// функція створення поля для гри
+	function createField(a){
+		// створення масиву, який характеризує поле гри
+		gField=new Array(a);
+		for(var i=0;i<a;i++)
+		gField[i]=new Array(a);
+
+		//ініціалізація масиву пустими значеннями
+		for(var i=0;i<a;i++)
+		for(var j=0;j<a;j++)
+		gField[i][j]="";
+
+		// створення таблиці в DOM
+		var table=document.getElementById("table");
+		for(var i=0;i<a;i++){
+		var tr=document.createElement("tr");
+		table.appendChild(tr);
+		for(var j=0;j<a;j++){
+		var td=document.createElement("td");
+		td.innerHTML=gField[i][j];
+		//table.setAttribute("onclick",CellClick(i,j));
+		tr.appendChild(td);
+		}
+		}
+	}
+	
+
+
+	
+	function searchT(x,y,t){
+		var mini=-1;
+		var maxi=1;
+		var minj=-1;
+		var maxj=1;
+
+		if(x+mini<0) mini=0;
+		if(x+maxi>gField.length-1) maxi=0;
+		if(y+minj<0) minj=0;
+		if(y+maxj>gField[0].length-1) maxj=0;
+		for(var i=mini;i<maxi;i++)
+			
+			for(var j=minj;j<maxj;j++)
+			{
+				if(gField[x+i][y+j]==t) 
+				return true
+			}
+		return false;
+	}
+	// перевірка на перемогу
+	function isWinner(n){
+			for(var x=0;x<=gField.length-n;x++)
+				for(var y=0;y<=gField[x].length-n;y++)
+				{
+					//перевірка по головній діагоналі
+					var lc=gField[x][y];
+					if(lc!==""){
+						for(var i=1;i<n;i++)
+						if(gField[x+i][y+i]!==lc) lc="";
+					}
+					if(lc!=="") return lc; //перемога по головній діагоналі
+					
+					//перевірка по зворотній діагоналі
+					var lc=gField[x][y+2];
+					if(lc!==""){
+						for(var i=1;i<n;i++)
+						if(gField[x+i][y+2-i]!==lc) lc="";
+					}
+					if(lc!=="") return lc; //перемога по зворотній діагоналі
+					
+					// перевірка по горизонталях
+					for(var i=0;i<n;i++)
+					{
+						var lc=gField[x+i][y]
+						if(lc!==""){
+							for(var j=1;j<n;j++){
+							if(gField[x+i][y+j]!==lc) lc="";
+						}
+						}
+						if(lc!=="") return lc; //перемога по горизонталі
+					}
+					
+
+					// перевірка по вертикалях
+					for(var i=0;i<n;i++){
+						var lc=gField[x][y+i]
+						if(lc!==""){
+							for(var j=1;j<n;j++){
+							if(gField[x+j][y+i]!==lc) lc="";
+						}
+						}
+						if(lc!=="") return lc; //перемога по вертикалі
+					}
+					
+
+				}
+				return false;
+			}
+
+			function PCSet(t,n){
+				var tt=null;
+				if(t=="X")
+				tt="O";
+				else tt="X";
+				var tx=null;
+				var ty=null;
+				var tp=0;
+				for(var x=0;x<gField.length;x++)
+					for(var y=0;y<gField.length;y++)
+					{
+					var lc=gField[x][y];
+					if(lc!==t && lc!==tt)
+					{
+						gField[x][y]=t;
+						if(isWinner(n)==t)
+						{
+							tx=x;
+							ty=y;
+							tp=3;
+						};
+						if(tp<3)
+						{
+							gField[x][y]=tt;
+							if(isWinner(n)==tt)
+							{
+								tx=x;
+								ty=y;
+								tp=2;
+							}
+						}
+						if(tp<2)
+						{
+							if(searchT(x,y,t))
+							{
+								tx=x;
+								ty=y;
+								tp=1;
+							}
+						}
+						if(tp<1)
+						{
+							
+							var rx=Math.round(Math.random()*(n-1));
+							var ry=Math.round(Math.random()*(n-1));
+							if(gField[rx][ry]==""){
+								tx=rx;
+								ty=ry;
+							}
+							else{
+								tx=x;
+								ty=y;
+							}
+						}
+					gField[x][y]=lc
+					}
+					}
+				if(tx!==null&&ty!==null)
+				setCell(tx,ty,t);
+			}
+			
+	
+
+	
+	
+	
+	
+	
+}
+
+	</script>
+		
+</head>
+<body>
+
+	<div id="field">
+		<label >Розмірність поля:</label>
+		<input id="size" type="text" value="3">
+		</br></br>
+		<label >Виберіть хід:</label>
+		<input type="radio" name="group" checked> Хрестиком
+		<input type="radio" name="group"> Ноликом
+		</br></br>
+		<input id="button" type="button" value="Згенерувати поле">
+		<table id="table"></table>
+
+	</div>
+	
+	
+	
+	
+	
+	
+	
+	
+		
+	
+	
+	
+
+</body>
+</html>
